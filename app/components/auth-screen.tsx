@@ -47,9 +47,8 @@ function LockIcon() {
   );
 }
 
-export function AuthScreen({ screen, children }: { screen: Screen; children?: ReactNode }) {
+export function AuthScreen({ screen, children, footer }: { screen: Screen; children: ReactNode; footer?: ReactNode }) {
   const content = screens[screen];
-  const isCode = screen === 'verify' || screen === 'mfa';
   return (
     <div className="app-shell">
       <header className="site-header">
@@ -86,83 +85,7 @@ export function AuthScreen({ screen, children }: { screen: Screen; children?: Re
           </div>
           <h2 id="auth-title">{content.title}</h2>
           <p className="card-description">{content.description}</p>
-          {/* ページ固有のフォームがある場合は、そちらを表示します。 */}
-          {children ?? <div className="auth-fields">
-            {!isCode ? (
-              <>
-                <div className="field">
-                  <label htmlFor="email">メールアドレス</label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                  />
-                </div>
-                <div className="field">
-                  <label htmlFor="password">パスワード</label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete={
-                      screen === 'signup' ? 'new-password' : 'current-password'
-                    }
-                    placeholder={
-                      screen === 'signup'
-                        ? 'パスワードを設定'
-                        : 'パスワードを入力'
-                    }
-                  />
-                  {screen === 'signup' && (
-                    <p className="field-hint">
-                      8文字以上のパスワードを入力してください。
-                    </p>
-                  )}
-                </div>
-                {screen === 'signup' && (
-                  <div className="field">
-                    <label htmlFor="confirm-password">パスワード（確認）</label>
-                    <input
-                      id="confirm-password"
-                      name="confirmPassword"
-                      type="password"
-                      autoComplete="new-password"
-                      placeholder="もう一度パスワードを入力"
-                    />
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="field">
-                <label htmlFor="code">
-                  {screen === 'mfa' ? '認証アプリのコード' : '認証コード'}
-                </label>
-                <input
-                  className="code-input"
-                  id="code"
-                  name="code"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  pattern="[0-9]{6}"
-                  placeholder="000000"
-                  aria-describedby="code-hint"
-                />
-                <p className="field-hint" id="code-hint">
-                  {screen === 'mfa'
-                    ? 'コードの有効期限が切れた場合は、次のコードを入力してください。'
-                    : 'メールが見つからない場合は、迷惑メールフォルダもご確認ください。'}
-                </p>
-              </div>
-            )}
-            <button className="primary-button" type="button">
-              {content.action}
-              <span aria-hidden="true">→</span>
-            </button>
-          </div>}
+          {children}
           <div className="card-bottom">
             {screen === 'login' && (
               <p>
@@ -176,14 +99,7 @@ export function AuthScreen({ screen, children }: { screen: Screen; children?: Re
                 <Link href="/login">ログイン</Link>
               </p>
             )}
-            {screen === 'verify' && (
-              <p>
-                コードが届きませんか？{' '}
-                <button type="button" className="text-button">
-                  コードを再送信
-                </button>
-              </p>
-            )}
+            {footer}
             {screen === 'mfa' && <Link href="/login">← ログインに戻る</Link>}
           </div>
         </section>

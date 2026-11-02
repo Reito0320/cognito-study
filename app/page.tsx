@@ -1,5 +1,1 @@
-import { AuthScreen } from "./components/auth-screen";
-
-export default function Home() {
-  return <AuthScreen screen="login" />;
-}
+export { default } from './login/page';
