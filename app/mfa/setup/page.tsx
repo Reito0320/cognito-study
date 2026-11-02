@@ -37,7 +37,7 @@ export default function MfaSetupPage() {
 
   return <AuthScreen screen="mfa" title="認証アプリを設定" description="初回のみ、認証アプリをアカウントに登録します。3つのステップで設定しましょう。">
     <SetupForm code={code} onCodeChange={setCode} onSubmit={handleSetup} error={error} isSubmitting={isSubmitting}
-      qrCode={<p className="text-center text-xs leading-6 text-slate-400">QRコード表示エリア<br />TODO C09</p>}
+      qrCode={<p className="text-center text-sm leading-6 text-slate-400">QRコード表示エリア<br />TODO C09</p>}
       setupKey="未実装（C09で設定）" />
   </AuthScreen>;
 }

@@ -14,14 +14,8 @@ export const flowLessons = [
     "outcome": "初期設定ができたら、会員登録へ。",
     "file": "lib/amplify.ts",
     "code": "Amplify.configure({\n  Auth: {\n    Cognito: {\n      userPoolId: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID!,\n      userPoolClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID!,\n    },\n  },\n});",
-    "resultTitle": "返り値の例",
-    "results": [
-      {
-        "label": "初期設定完了",
-        "data": "undefined",
-        "meaning": "戻り値で画面を分岐しません。設定を読み込んだ後、signUpやsignInを呼びます。"
-      }
-    ]
+    "resultTitle": "",
+    "results": []
   },
   {
     "id": "C04",
@@ -257,7 +251,7 @@ export const flowLessons = [
       },
       {
         "label": "ログイン情報なし",
-        "data": "{\n  tokens: undefined\n}",
+        "data": "{}",
         "meaning": "未ログインの場合はtokensがないため/loginへ。期限切れ時の更新失敗などは例外になる場合もあります。"
       }
     ]
@@ -276,14 +270,8 @@ export const flowLessons = [
     "outcome": "サインアウト後は、signInから再開。",
     "file": "app/home/home-session.tsx",
     "code": "await signOut();\nclearChallenge();\nsetName(null);\nrouter.replace('/login');",
-    "resultTitle": "返り値の例",
-    "results": [
-      {
-        "label": "サインアウト完了",
-        "data": "undefined",
-        "meaning": "signOutはPromise<void>です。成功時にユーザーデータやnextStepは返らず、共有状態を消して/loginへ進みます。"
-      }
-    ]
+    "resultTitle": "",
+    "results": []
   },
   {
     "id": "C13",
