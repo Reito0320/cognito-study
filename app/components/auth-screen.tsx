@@ -1,31 +1,28 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { SessionNotice } from './session-notice';
 
 const screens = {
   login: {
     label: 'ログイン',
     title: 'おかえりなさい',
     description: 'メールアドレスとパスワードを入力してください。',
-    action: 'ログイン',
   },
   signup: {
     label: '新規登録',
     title: 'アカウントを作成',
     description: 'メールアドレスとパスワードを登録してください。',
-    action: 'アカウントを作成',
   },
   verify: {
     label: '認証コード',
     title: 'メールアドレスを確認',
     description:
       '登録したメールアドレスに届いた6桁の認証コードを入力してください。',
-    action: 'メールアドレスを確認',
   },
   mfa: {
     label: 'MFA認証',
     title: 'もう一度、本人確認',
     description: '認証アプリに表示されている6桁のコードを入力してください。',
-    action: '認証する',
   },
 };
 type Screen = keyof typeof screens;
@@ -47,7 +44,7 @@ function LockIcon() {
   );
 }
 
-export function AuthScreen({ screen, children, footer }: { screen: Screen; children: ReactNode; footer?: ReactNode }) {
+export function AuthScreen({ screen, children, footer, title, description }: { screen: Screen; children: ReactNode; footer?: ReactNode; title?: string; description?: string }) {
   const content = screens[screen];
   return (
     <div className="app-shell">
@@ -83,8 +80,9 @@ export function AuthScreen({ screen, children, footer }: { screen: Screen; child
           <div className="card-icon">
             <LockIcon />
           </div>
-          <h2 id="auth-title">{content.title}</h2>
-          <p className="card-description">{content.description}</p>
+          <h2 id="auth-title">{title ?? content.title}</h2>
+          <p className="card-description">{description ?? content.description}</p>
+          <SessionNotice />
           {children}
           <div className="card-bottom">
             {screen === 'login' && (
@@ -105,7 +103,7 @@ export function AuthScreen({ screen, children, footer }: { screen: Screen; child
         </section>
         <p className="preview-note">
           <span aria-hidden="true" />
-          学習用UIプレビュー · 認証処理は未接続です
+          学習用UI · CognitoとLambdaの実装は課題です
         </p>
       </main>
       <footer className="site-footer">

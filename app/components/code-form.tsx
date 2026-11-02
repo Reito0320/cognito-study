@@ -1,7 +1,8 @@
-import type { SubmitEvent } from 'react';
+import type { Ref, SubmitEvent } from 'react';
 
 type Props = {
   email?: string;
+  emailInputRef?: Ref<HTMLInputElement>;
   onEmailChange?: (value: string) => void;
   code: string;
   onCodeChange: (value: string) => void;
@@ -15,11 +16,11 @@ type Props = {
   message: string;
 };
 
-export function CodeForm({ email, onEmailChange, code, onCodeChange, onSubmit, label, hint, action, isSubmitting, disabled, error, message }: Props) {
+export function CodeForm({ emailInputRef, email, onEmailChange, code, onCodeChange, onSubmit, label, hint, action, isSubmitting, disabled, error, message }: Props) {
   return <form className="auth-fields" onSubmit={onSubmit} aria-busy={isSubmitting}>
     {onEmailChange && <div className="field">
       <label htmlFor="email">登録したメールアドレス</label>
-      <input id="email" name="email" type="email" autoComplete="email" placeholder="you@example.com"
+      <input ref={emailInputRef} id="email" name="email" type="email" autoComplete="email" placeholder="you@example.com"
         value={email ?? ''} onChange={(event) => onEmailChange(event.target.value)} required />
     </div>}
     <div className="field">

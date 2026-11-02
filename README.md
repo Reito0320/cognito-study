@@ -1,74 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cognito Study — 認証ハンズオン問題集
 
-## Getting Started
+UIは用意済みです。Cognito・Lambdaの処理を自分で実装して、登録からログイン・MFAまでの流れを学びます。
 
-First, run the development server:
+- `main`: 認証処理が空欄の問題集。ここから自分の作業ブランチを作って取り組みます。
+- `myStudy`: 現在のCognito実装を保存した参考ブランチ。Lambdaは未実装です。
+
+課題の場所・実装順・完了条件は [問題集](docs/exercises.md) を参照してください。
+
+## 起動
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+未実装のままでも起動・ビルドできます。AWSへの接続や認証リクエストは行いません。
+フォームの送信はTODOメッセージを表示し、成功したふりをしません。
+`/home`と`/mfa/setup`もUIプレビューとして直接表示できます。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## 認証ハンズオンの実装箇所
-
-各 `page.tsx` が入力状態・検証・送信処理を持ち、フォームには値と関数を props で渡します。
-
-| URL | 処理を記述するファイル | Amplify Auth の例 |
-| --- | --- | --- |
-| `/`・`/login` | `app/login/page.tsx` | `signIn` |
-| `/signup` | `app/signup/page.tsx` | `signUp` |
-| `/verify` | `app/verify/page.tsx` | `confirmSignUp`・`resendSignUpCode` |
-| `/mfa` | `app/mfa/page.tsx` | `confirmSignIn`（TOTPコード） |
-
-現在は入力チェックと未接続メッセージの表示まで動きます。登録、ログイン、コード送信、認証、認証後の画面遷移は実行しません。
-メール認証画面では登録メールアドレスを入力します。MFAのセットアップ・SMS認証・ログイン後のページは含んでいません。
-
-各送信処理に Lambda の `fetch` と Amplify Auth のサンプルをコメントで残しています。
-接続する際は方式を選び、エンドポイントやレスポンス処理を実装してください。
-Lambda 方式の MFA では、ログイン時に返されたチャレンジセッションを引き継ぐ処理も必要です。
-Amplify 方式では `signIn` → `confirmSignIn` の流れを使い、Lambda方式のチャレンジと混ぜずに完了させます。
-
-Amplify を使う場合は依存パッケージとクライアント側の初期設定を用意します。手動で User Pool を設定する場合の例です（未接続のためコメント化しています）。
+## 実装する場所
 
 ```ts
-// import { Amplify } from 'aws-amplify';
-// Amplify.configure({
-//   Auth: {
-//     Cognito: {
-//       userPoolId: 'YOUR_USER_POOL_ID',
-//       userPoolClientId: 'YOUR_USER_POOL_CLIENT_ID',
-//     },
-//   },
-// });
+// [COGNITO Cxx START]
+// TODO: ここに認証処理を書きます。
+// [COGNITO Cxx END]
 ```
 
-接続後は、サンプル内の未接続メッセージを実際の成功処理に置き換えてください。
-`nextStep` に応じた画面遷移・追加チャレンジ処理や、Cognitoに設定したパスワードポリシーとの整合も実装します。
+Cognito課題の空欄を実装してください。`throw new Error('TODO ...')`は仮置きなので、実装時に置き換えます。
+`[LAMBDA Lxx START]`〜`END`は発展課題の空欄です。まずCognito版を完成させ、必要な箇所だけLambda経由へ置き換えます。
+このリポジトリにLambdaのバックエンド実装は含まれません。
 
-参考: [Amplify のサインアップ](https://docs.amplify.aws/react/frontend/auth/sign-up/)・[サインイン](https://docs.amplify.aws/nextjs/frontend/auth/sign-in/)
+各ページに入力状態・入力チェック・送信ハンドラーがあります。React Contextは画面間のメールアドレスと進行中の認証手順を共有するための土台です。
+
+| 画面 | 学習すること |
+| --- | --- |
+| `/`・`/login` | 通常ログインと次の認証手順 |
+| `/signup` | 新規登録とユーザー属性 |
+| `/verify` | 登録確認・再送信・自動サインイン |
+| `/mfa/setup` | TOTP初回設定のQRコード・キー表示と確認 |
+| `/mfa` | 登録済みMFAのコード確認 |
+| `/home` | セッション確認・ユーザー表示・サインアウト |
+
+## AWSへ接続する前の準備
+
+`.env.example`を参考に`.env.local`へUser Pool IDとApp Client IDを設定します。
+既存の`.env`がある場合はその設定も使用できます。環境変数はC01を実装するまで使われません。
+
+Cognito側はメールアドレスでのサインイン、コードでの登録確認、クライアントシークレットなしのブラウザ用App Clientを設定します。
+TOTPの初回設定を学ぶときは、認証アプリによるMFAを有効にして必須にしてください。
+MFAが任意で未登録の場合、ログイン時に初回設定チャレンジが返らない場合があります。
+
+課題の対象はメール登録確認・パスワードログイン・自動サインイン・TOTPです。
+SMS・メールコードの入力UIもありますが、パスワードリセット、強制パスワード変更、外部IdPは別課題です。
+
+## 確認
+
+```bash
+npm run lint
+npx next build --webpack
+npm run test:auth
+```
+
+**未実装の`main`ではLint・ビルドは通り、`test:auth`の9件は失敗します。**
+認証結果の遷移分岐（C02）とエラー処理（C13）を実装し、テストが通ることを確認してください。
+このテストはローカルの判定処理だけを検証します。Cognito APIの接続は、[問題集のチェック手順](docs/exercises.md#チェック方法)で確認します。
+テストにはNode.js 22.6以降が必要です。
+
+## 実装例を確認する
+
+```bash
+# 自分の変更をコミットしてから切り替える
+git switch myStudy
+
+# 問題集に戻る
+git switch main
+```
+
+ブランチ間の差分でも、課題と実装例を比較できます。
+
+```bash
+git diff main..myStudy -- app/login/page.tsx
+```
+
+参考: [Amplifyのサインアップ](https://docs.amplify.aws/nextjs/frontend/auth/sign-up/)・[ログインとMFA](https://docs.amplify.aws/nextjs/frontend/auth/multi-step-sign-in/)
