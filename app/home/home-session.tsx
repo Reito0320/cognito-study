@@ -27,7 +27,7 @@ export function HomeSession({ children }: { children: ReactNode }) {
   }
 
   return <>
-    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-100 bg-emerald-50 px-6 py-3 text-xs text-emerald-900">
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-cognito-100 bg-cognito-50 px-6 py-3 text-xs text-cognito-900">
       <p>学習用プレビュー · セッション確認は未実装です</p>
       <button type="button" onClick={handleSignOut} disabled={isSubmitting} className="underline disabled:opacity-50">サインアウト</button>
       {error && <p role="alert" className="form-error w-full">{error}</p>}
