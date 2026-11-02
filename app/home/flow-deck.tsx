@@ -6,12 +6,15 @@ import { flowLessons } from './flow-lessons';
 export function FlowDeck() {
   const [index, setIndex] = useState(0);
   const [showCode, setShowCode] = useState(false);
+  const [resultIndex, setResultIndex] = useState(0);
   const lesson = flowLessons[index];
+  const result = lesson.results[resultIndex] ?? lesson.results[0];
   const isLast = index === flowLessons.length - 1;
 
   function turnCard(next: number) {
     setIndex(next);
     setShowCode(false);
+    setResultIndex(0);
   }
 
   return <section aria-label="認証フローの学習カード" className="grid items-start gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
@@ -71,6 +74,25 @@ export function FlowDeck() {
           </div>
         </article>
       </div>
+
+      <section aria-labelledby="result-title" className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-6 py-5">
+          <h3 id="result-title" className="text-sm font-semibold text-slate-800">{lesson.resultTitle}</h3>
+          <span className="font-mono text-[9px] tracking-widest text-emerald-700">DATA EXAMPLE</span>
+          <p className="w-full text-[11px] leading-6 text-slate-400">ダミーデータによる代表例です。主要フィールドのみ掲載し、実際の値・追加の手順は設定によって変わります。</p>
+        </div>
+        {lesson.results.length > 1 && <div className="flex flex-wrap gap-2 px-6 pt-5" role="group" aria-label="返り値のパターンを選択">
+          {lesson.results.map((item, position) => <button type="button" key={item.label} onClick={() => setResultIndex(position)} aria-pressed={resultIndex === position} aria-controls="result-example"
+            className={`rounded-lg border px-3 py-2 text-[11px] leading-5 transition-colors ${resultIndex === position ? 'border-emerald-900 bg-emerald-950 text-white' : 'border-slate-200 text-slate-500 hover:border-emerald-400'}`}>{item.label}</button>)}
+        </div>}
+        <div id="result-example" className="grid gap-5 p-6 xl:grid-cols-[1.15fr_1fr]">
+          <pre tabIndex={0} aria-label={result.label} className="max-h-96 min-w-0 overflow-auto rounded-xl bg-slate-950 p-5 font-mono text-[11px] leading-6 text-emerald-100"><code>{result.data}</code></pre>
+          <div className="flex flex-col justify-center rounded-xl border border-emerald-100 bg-emerald-50/60 p-5">
+            <p className="mb-3 text-[10px] font-semibold tracking-widest text-emerald-700">このデータから分かること</p>
+            <p aria-live="polite" className="text-xs leading-7 text-emerald-950">{result.meaning}</p>
+          </div>
+        </div>
+      </section>
 
       <div className="mt-6 flex items-center justify-between gap-3">
         <button type="button" disabled={index === 0} onClick={() => turnCard(index - 1)} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-600 transition-colors hover:border-slate-400 disabled:cursor-default disabled:opacity-35 sm:px-6">← 前のカード</button>
