@@ -2,7 +2,6 @@
 
 import { useState, type SubmitEvent } from 'react';
 import { AuthScreen } from '../../components/auth-screen';
-import { authErrorMessage } from '@/lib/auth-flow';
 import { SetupForm } from './setup-form';
 
 export default function MfaSetupPage() {
@@ -11,7 +10,10 @@ export default function MfaSetupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // [COGNITO C09-DATA START]
-  // TODO C09: 初回設定のnextStepから設定用URIと共有秘密鍵を取り出してください。
+  // TODO C09: useAuthFlowからnextStepを受け取ります。
+  // nextStep?.signInStepがCONTINUE_SIGN_IN_WITH_TOTP_SETUPなら
+  // nextStep.totpSetupDetailsを取り出します。
+  // getSetupUri('Cognito Study')をQRCodeSVG（qrcode.react）へ渡します。
   // URIはQRコードにしてqrCodeへ、共有秘密鍵はsetupKeyへ渡します。
   // [COGNITO C09-DATA END]
 
@@ -22,14 +24,16 @@ export default function MfaSetupPage() {
     setIsSubmitting(true);
     try {
       // [COGNITO C09 START]
-      // TODO C09: アプリに表示されたコードで設定を確認し、次の画面へ進めてください。
+      // TODO C09: confirmSignIn({ challengeResponse: code })を呼びます。
+      // isSignedInがtrueならsetNextStep(null)を実行して/homeへ進みます。
+      // confirmSignInとuseRouterをimportし、Pageの先頭でrouterを用意します。
       throw new Error('TODO C09: TOTP初回設定の確認は未実装です。');
       // [COGNITO C09 END]
       // [LAMBDA L06 START]
       // TODO: Lambda経由の処理を実装する場合の空欄です。
       // [LAMBDA L06 END]
     } catch (error) {
-      setError(authErrorMessage(error));
+      setError(error instanceof Error ? error.message : '認証処理に失敗しました。');
     } finally {
       setIsSubmitting(false);
     }

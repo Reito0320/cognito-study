@@ -3,11 +3,10 @@
 import { useState, type SubmitEvent } from 'react';
 import { AuthScreen } from '../components/auth-screen';
 import { useAuthFlow } from '../components/auth-provider';
-import { authErrorMessage } from '@/lib/auth-flow';
 import { SignupForm } from './signup-form';
 
 export default function Page() {
-  const { email, setEmail, clearChallenge } = useAuthFlow();
+  const { email, setEmail, setNextStep } = useAuthFlow();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,16 +22,20 @@ export default function Page() {
     }
     setIsSubmitting(true);
     try {
-      clearChallenge();
+      setNextStep(null);
       // [COGNITO C04 START]
-      // TODO C04: 新規登録、自動サインインの有効化、nextStepに応じた画面遷移を実装してください。
-      throw new Error('TODO C04: 新規登録、自動サインインの有効化、nextStepに応じた画面遷移は未実装です。');
+      // TODO C04: ここでsignUpを呼びます（aws-amplify/authからimport）。
+      // username: email、password、options.userAttributes: { email }を渡します。
+      // 基本課題ではautoSignInを指定しません。
+      // nextStep.signUpStepがCONFIRM_SIGN_UPなら/verify、DONEなら/loginへ。
+      // useRouterをimportし、Pageの先頭でrouterを用意してください。
+      throw new Error('TODO C04: 新規登録と画面遷移は未実装です。');
       // [COGNITO C04 END]
       // [LAMBDA L01 START]
       // TODO: Lambda経由で実装する場合の処理をここに記述（Cognito直接呼び出しとの二重実行はしない）。
       // [LAMBDA L01 END]
     } catch (error) {
-      setError(authErrorMessage(error));
+      setError(error instanceof Error ? error.message : '認証処理に失敗しました。');
     } finally {
       setIsSubmitting(false);
     }

@@ -1,4 +1,4 @@
-// myStudy（032b1b1）の実装から抜粋した表示専用のコードです。認証処理として実行しません。
+// 基本課題の参考コードです。表示専用で、認証処理として実行しません。
 export const flowLessons = [
   {
     "id": "C01",
@@ -24,13 +24,13 @@ export const flowLessons = [
     "chapter": "新規登録",
     "description": "メールアドレスとパスワードをCognitoへ送って、ユーザーを登録します。",
     "points": [
-      "usernameは今回のログインに使うメールアドレス。",
-      "userAttributesにはユーザー情報としてemailを登録。",
-      "autoSignInを有効にし、確認後のログインに備える。"
+      "メールアドレスとパスワードをCognitoへ送る。",
+      "emailをユーザー属性として登録する。",
+      "確認が必要なら/verifyへ進む。"
     ],
     "outcome": "CONFIRM_SIGN_UPなら、メールのコード確認へ。",
     "file": "app/signup/page.tsx",
-    "code": "const { nextStep } = await signUp({\n  username: email.trim(), password,\n  options: { userAttributes: { email: email.trim() }, autoSignIn: true },\n});\nswitch (nextStep.signUpStep) {\n  case 'CONFIRM_SIGN_UP': router.replace('/verify'); return;\n  case 'COMPLETE_AUTO_SIGN_IN':\n    try { await continueSignIn(await autoSignIn()); }\n    catch (error) { setError(`登録は完了しました。${authErrorMessage(error)}`); }\n    return;\n  case 'DONE': router.replace('/login'); return;\n}",
+    "code": "const { nextStep } = await signUp({\n  username: email,\n  password,\n  options: { userAttributes: { email } },\n});\nif (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {\n  router.replace('/verify');\n} else if (nextStep.signUpStep === 'DONE') {\n  router.replace('/login');\n}",
     "resultTitle": "返り値の例",
     "results": [
       {
@@ -48,38 +48,23 @@ export const flowLessons = [
   {
     "id": "C06",
     "title": "メールのコードを確認する",
-    "api": "confirmSignUp / autoSignIn",
+    "api": "confirmSignUp",
     "chapter": "登録確認",
-    "description": "メールに届いたコードを確認し、登録完了後の手順へ進みます。登録確認とログインは別の処理です。",
+    "description": "メールに届いたコードで登録を確認します。完了後はログイン画面へ進みます。",
     "points": [
-      "コード確認に成功したら、確認済みの状態を保持。",
-      "COMPLETE_AUTO_SIGN_INならautoSignInを呼ぶ。",
-      "自動ログインだけ失敗した場合、登録確認はやり直さない。"
+      "confirmSignUpへメールとコードを渡す。",
+      "登録確認とログインは別の処理。",
+      "成功したら/loginへ進む。"
     ],
-    "outcome": "自動ログインの結果で分岐。DONEなら通常ログインへ。",
+    "outcome": "メール確認 → ログイン。",
     "file": "app/verify/page.tsx",
-    "code": "const { nextStep } = await confirmSignUp({\n  username: email.trim(), confirmationCode: code,\n});\nsetIsConfirmed(true);\n\nif (nextStep.signUpStep === 'COMPLETE_AUTO_SIGN_IN') {\n  try {\n    await continueSignIn(await autoSignIn());\n  } catch (error) {\n    // メール確認は成功済み。自動ログインの失敗と区別します。\n    setMessage('メールアドレスの確認は完了しました。');\n    setError(authErrorMessage(error));\n  }\n} else {\n  router.replace('/login');\n}",
+    "code": "await confirmSignUp({ username: email, confirmationCode: code });\nrouter.replace('/login');",
     "resultTitle": "返り値の例",
     "results": [
       {
         "label": "confirmSignUp：通常完了",
         "data": "{\n  \"isSignUpComplete\": true,\n  \"nextStep\": {\n    \"signUpStep\": \"DONE\"\n  }\n}",
         "meaning": "登録確認は成功しました。/loginへ移動してsignInを呼びます。"
-      },
-      {
-        "label": "confirmSignUp：自動ログインへ",
-        "data": "{\n  \"isSignUpComplete\": true,\n  \"nextStep\": {\n    \"signUpStep\": \"COMPLETE_AUTO_SIGN_IN\"\n  }\n}",
-        "meaning": "autoSignInを呼びます。この時点ではログイン完了とは限りません。"
-      },
-      {
-        "label": "autoSignIn：MFAが必要",
-        "data": "{\n  \"isSignedIn\": false,\n  \"nextStep\": {\n    \"signInStep\": \"CONFIRM_SIGN_IN_WITH_TOTP_CODE\"\n  }\n}",
-        "meaning": "autoSignInの結果はsignInStepで判断。isSignedInがfalseなら/mfaでコードを確認します。"
-      },
-      {
-        "label": "autoSignIn：ログイン完了",
-        "data": "{\n  \"isSignedIn\": true,\n  \"nextStep\": {\n    \"signInStep\": \"DONE\"\n  }\n}",
-        "meaning": "isSignedInがtrueなので/homeへ。登録のsignUpStepとログインのsignInStepを区別します。"
       }
     ]
   },
@@ -113,13 +98,13 @@ export const flowLessons = [
     "chapter": "通常ログイン",
     "description": "自動サインインを使わない場合や、サインアウト後はここからログインします。",
     "points": [
-      "メールアドレスとパスワードを送る。",
-      "ログイン完了とは限らないので、結果を共通処理へ渡す。",
-      "MFAやメール確認など、nextStepの手順を続ける。"
+      "signInを呼ぶ。",
+      "isSignedInでログイン完了を確認する。",
+      "nextStepの分岐はこのページ内に直接書く。"
     ],
-    "outcome": "結果をcontinueSignInへ。次のカードで分岐を確認。",
+    "outcome": "ログイン結果からホーム・MFA・初回設定へ。",
     "file": "app/login/page.tsx",
-    "code": "const result = await signIn({ username: email.trim(), password });\nawait continueSignIn(result);",
+    "code": "const { isSignedIn, nextStep } = await signIn({ username: email, password });\nif (isSignedIn) {\n  router.replace('/home');\n} else {\n  setNextStep(nextStep);\n  switch (nextStep.signInStep) {\n    case 'CONTINUE_SIGN_IN_WITH_TOTP_SETUP':\n      router.replace('/mfa/setup');\n      break;\n    case 'CONFIRM_SIGN_IN_WITH_TOTP_CODE':\n      router.replace('/mfa');\n      break;\n    case 'CONFIRM_SIGN_UP':\n      router.replace('/verify');\n      break;\n    default:\n      setError(`今回の基本課題の対象外です: ${nextStep.signInStep}`);\n  }\n}",
     "resultTitle": "返り値の例",
     "results": [
       {
@@ -145,39 +130,6 @@ export const flowLessons = [
     ]
   },
   {
-    "id": "C03 / C02",
-    "title": "次に進む画面を決める",
-    "api": "nextStep / confirmSignIn",
-    "chapter": "共通の分岐",
-    "description": "通常ログイン・自動サインイン・MFA確認の結果を、同じルールで扱います。",
-    "points": [
-      "MFA方式の選択が必要なら、利用可能なTOTPを選ぶ。",
-      "初回設定は/mfa/setup、登録済みコード確認は/mfaへ。",
-      "isSignedInがtrueになったら/homeへ進む。"
-    ],
-    "outcome": "必要なチャレンジへ。完了済みならホームへ。",
-    "file": "app/components/auth-provider.tsx · lib/auth-flow.ts",
-    "code": "async function continueSignIn(result: SignInOutput): Promise<void> {\n  const step = result.nextStep;\n  // このハンズオンでは、選択が必要な場合はTOTPを選びます。\n  if (!result.isSignedIn && (\n    step.signInStep === 'CONTINUE_SIGN_IN_WITH_MFA_SELECTION' ||\n    step.signInStep === 'CONTINUE_SIGN_IN_WITH_MFA_SETUP_SELECTION'\n  )) {\n    if (!step.allowedMFATypes?.includes('TOTP')) {\n      throw new Error('CognitoでTOTPを有効にしてください。');\n    }\n    return continueSignIn(await confirmSignIn({ challengeResponse: 'TOTP' }));\n  }\n  const destination = getSignInRoute(result);\n  // QR用の共有秘密鍵を含むnextStepは、画面間のメモリだけで保持します。\n  setNextStep(result.isSignedIn ? null : step);\n  router.replace(destination);\n}\n\nexport function getSignInRoute({ isSignedIn, nextStep }: SignInOutput) {\n  if (isSignedIn) return '/home';\n  switch (nextStep.signInStep) {\n    case 'CONFIRM_SIGN_UP':\n      return '/verify';\n    case 'CONTINUE_SIGN_IN_WITH_TOTP_SETUP':\n      return '/mfa/setup';\n    case 'CONFIRM_SIGN_IN_WITH_TOTP_CODE':\n    case 'CONFIRM_SIGN_IN_WITH_SMS_CODE':\n    case 'CONFIRM_SIGN_IN_WITH_EMAIL_CODE':\n      return '/mfa';\n    default:\n      throw new Error(`この学習アプリでは未対応の認証手順です: ${nextStep.signInStep}`);\n  }\n}",
-    "resultTitle": "受け取るresultの例",
-    "results": [
-      {
-        "label": "MFA方式を選択",
-        "data": "{\n  \"isSignedIn\": false,\n  \"nextStep\": {\n    \"signInStep\": \"CONTINUE_SIGN_IN_WITH_MFA_SELECTION\",\n    \"allowedMFATypes\": [\n      \"TOTP\",\n      \"SMS\"\n    ]\n  }\n}",
-        "meaning": "このアプリは利用可能なTOTPを選び、confirmSignInの結果をもう一度分岐処理へ渡します。"
-      },
-      {
-        "label": "初回設定の方式を選択",
-        "data": "{\n  \"isSignedIn\": false,\n  \"nextStep\": {\n    \"signInStep\": \"CONTINUE_SIGN_IN_WITH_MFA_SETUP_SELECTION\",\n    \"allowedMFATypes\": [\n      \"TOTP\"\n    ]\n  }\n}",
-        "meaning": "TOTPを選ぶと、初回設定用のnextStepが続きます。選択しただけではログイン完了になりません。"
-      },
-      {
-        "label": "選択後のTOTP確認",
-        "data": "{\n  \"isSignedIn\": false,\n  \"nextStep\": {\n    \"signInStep\": \"CONFIRM_SIGN_IN_WITH_TOTP_CODE\"\n  }\n}",
-        "meaning": "getSignInRouteは/mfaを返します。continueSignIn自体の戻り値はPromise<void>です。"
-      }
-    ]
-  },
-  {
     "id": "C09",
     "title": "認証アプリを初めて登録する",
     "api": "totpSetupDetails",
@@ -190,7 +142,7 @@ export const flowLessons = [
     ],
     "outcome": "アプリに登録したら、表示される6桁のコードで確認。",
     "file": "app/mfa/setup/page.tsx",
-    "code": "const details =\n  nextStep?.signInStep === 'CONTINUE_SIGN_IN_WITH_TOTP_SETUP'\n    ? nextStep.totpSetupDetails\n    : null;\n\n// detailsがある場合、SetupFormに渡すQRと手動キーを表示\n{details && (\n  <SetupForm\n    code={code}\n    onCodeChange={setCode}\n    onSubmit={handleSetup}\n    error={error}\n    isSubmitting={isSubmitting}\n    qrCode={\n      <QRCodeSVG\n        value={details.getSetupUri('Cognito Study').toString()}\n        size={192}\n        marginSize={4}\n        title=\"認証アプリ登録用QRコード\"\n        className=\"h-full w-full\"\n      />\n    }\n    setupKey={details.sharedSecret}\n  />\n)}\n\n// フォーム送信後の設定確認\nawait continueSignIn(\n  await confirmSignIn({ challengeResponse: code })\n);",
+    "code": "// Pageの中：loginで保存した値からQRを作ります。\nconst { nextStep, setNextStep } = useAuthFlow();\nconst details = nextStep?.signInStep === 'CONTINUE_SIGN_IN_WITH_TOTP_SETUP'\n  ? nextStep.totpSetupDetails : null;\n\n// JSX内（detailsがない場合はログインからやり直す案内を表示）\n// qrCode={<QRCodeSVG value={details.getSetupUri('Cognito Study').toString()} />}\n// setupKey={details.sharedSecret}\n\n// handleSetup内：認証アプリのコードで設定を確定します。\nconst { isSignedIn } = await confirmSignIn({ challengeResponse: code });\nif (isSignedIn) {\n  setNextStep(null);\n  router.replace('/home');\n}",
     "resultTitle": "受け取る設定データの例",
     "results": [
       {
@@ -212,19 +164,19 @@ export const flowLessons = [
     "chapter": "追加認証",
     "description": "認証アプリのコードをCognitoに渡し、ログインの追加手順を完了させます。",
     "points": [
-      "challengeResponseには今回の認証コードを渡す。",
-      "TOTP初回設定の確認でも、同じAPIを使う。",
-      "結果は再びcontinueSignInに渡し、成功や追加手順を判断。"
+      "confirmSignInへコードを渡す。",
+      "isSignedInがtrueなら完了。",
+      "共有値を消して/homeへ進む。"
     ],
     "outcome": "isSignedInがtrueなら、ホームが表示される。",
     "file": "app/mfa/page.tsx",
-    "code": "await continueSignIn(await confirmSignIn({ challengeResponse: code }));",
+    "code": "const { isSignedIn } = await confirmSignIn({ challengeResponse: code });\nif (isSignedIn) {\n  setNextStep(null);\n  router.replace('/home');\n}",
     "resultTitle": "返り値の例",
     "results": [
       {
         "label": "MFA確認が完了",
         "data": "{\n  \"isSignedIn\": true,\n  \"nextStep\": {\n    \"signInStep\": \"DONE\"\n  }\n}",
-        "meaning": "追加認証が完了。continueSignInが/homeへ遷移させます。"
+        "meaning": "追加認証が完了。このページで/homeへ遷移します。"
       }
     ]
   },
@@ -236,18 +188,18 @@ export const flowLessons = [
     "description": "保存済みセッションを取得し、ホームに表示するユーザー情報を取り出します。",
     "points": [
       "トークンがなければ、ログイン画面へ戻す。",
-      "表示名はIDトークンのname、なければemail。",
+      "IDトークンのemailを画面に表示。",
       "ブラウザの確認とは別に、APIではサーバー側でトークンを検証する。"
     ],
     "outcome": "ホームにユーザーを表示。次はサインアウト。",
     "file": "app/home/home-session.tsx",
-    "code": "useEffect(() => {\n  let active = true;\n  fetchAuthSession().then(({ tokens }) => {\n    if (!active) return;\n    if (!tokens?.accessToken || !tokens.idToken) {\n      router.replace('/login');\n      return;\n    }\n    const { name, email } = tokens.idToken.payload;\n    setName(typeof name === 'string' ? name : typeof email === 'string' ? email : 'ユーザー');\n  }).catch((error) => { if (active) setError(authErrorMessage(error)); });\n  return () => { active = false; };\n}, [router]);",
+    "code": "// Pageの先頭にnameのstateとuseRouterを用意します。\nuseEffect(() => {\n  async function loadSession() {\n    try {\n      const { tokens } = await fetchAuthSession();\n      if (!tokens?.idToken) {\n        router.replace('/login');\n        return;\n      }\n      setName(String(tokens.idToken.payload.email ?? 'ユーザー'));\n    } catch (error) {\n      setError(error instanceof Error ? error.message : 'セッションを確認できませんでした。');\n    }\n  }\n  loadSession();\n}, [router]);",
     "resultTitle": "返り値の例",
     "results": [
       {
         "label": "ログイン済み",
         "data": "{\n  \"tokens\": {\n    \"accessToken\": {\n      \"payload\": {\n        \"sub\": \"<ユーザーID>\",\n        \"token_use\": \"access\"\n      }\n    },\n    \"idToken\": {\n      \"payload\": {\n        \"sub\": \"<ユーザーID>\",\n        \"token_use\": \"id\",\n        \"name\": \"山田 太郎\",\n        \"email\": \"you@example.com\"\n      }\n    }\n  }\n}",
-        "meaning": "主要フィールドだけを抜粋しています。tokens内のトークンは実際にはJWTオブジェクト。IDトークンのnameかemailを表示に使います。"
+        "meaning": "主要フィールドだけを抜粋しています。tokens内のトークンは実際にはJWTオブジェクト。IDトークンのemailを表示に使います。"
       },
       {
         "label": "ログイン情報なし",
@@ -269,36 +221,8 @@ export const flowLessons = [
     ],
     "outcome": "サインアウト後は、signInから再開。",
     "file": "app/home/home-session.tsx",
-    "code": "await signOut();\nclearChallenge();\nsetName(null);\nrouter.replace('/login');",
+    "code": "await signOut();\nsetNextStep(null);\nrouter.replace('/login');",
     "resultTitle": "",
     "results": []
-  },
-  {
-    "id": "C13",
-    "title": "エラーから次の操作を決める",
-    "api": "AuthError",
-    "chapter": "エラー処理",
-    "description": "認証が止まったときは、エラー名を見て原因と次の操作を切り分けます。",
-    "points": [
-      "コードの不一致と無効なコードを区別。",
-      "既存のログインセッションがある場合は明示的にサインアウト。",
-      "登録確認の失敗と、その後の自動ログイン失敗を混同しない。"
-    ],
-    "outcome": "課題で実装し、同じエラーを再現して挙動を確認。",
-    "file": "lib/auth-flow.ts",
-    "code": "export function authErrorMessage(error: unknown) {\n  if (!(error instanceof Error)) return '認証処理に失敗しました。';\n  switch (error.name) {\n    case 'UserAlreadyAuthenticatedException':\n      return 'すでにログイン中です。ホームへ進むか、サインアウトしてからやり直してください。';\n    case 'CodeMismatchException':\n      return '認証コードが一致しません。最新のコードを確認してください。';\n    case 'ExpiredCodeException':\n      return '認証コードが無効になっています。コードを再送信してください。';\n    case 'AutoSignInException':\n      return '自動ログインを継続できません。ログイン画面からログインしてください。';\n    default:\n      // 学習用にCognitoから返ったエラー名と理由を確認できるようにします。\n      return `${error.name}: ${error.message}`;\n  }\n}",
-    "resultTitle": "catchで受け取る例外の例",
-    "results": [
-      {
-        "label": "無効な確認コード",
-        "data": "{\n  \"name\": \"ExpiredCodeException\",\n  \"message\": \"Invalid code provided, please request a code again.\"\n}",
-        "meaning": "正常な返り値ではなく例外です。catchで受け取り、コードの再送信を案内します。"
-      },
-      {
-        "label": "既存のログイン状態",
-        "data": "{\n  \"name\": \"UserAlreadyAuthenticatedException\",\n  \"message\": \"There is already a signed in user.\"\n}",
-        "meaning": "現在のユーザーを確認し、必要なら明示的にサインアウト。別ユーザーのログイン成功として扱いません。"
-      }
-    ]
   }
 ] as const;

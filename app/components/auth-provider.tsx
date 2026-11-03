@@ -4,12 +4,12 @@ import '@/lib/amplify';
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { SignInOutput } from 'aws-amplify/auth';
 
+// 画面間で値を渡すだけの土台です。認証処理と画面遷移は各ページに書きます。
 type AuthFlow = {
   email: string;
   setEmail: (email: string) => void;
   nextStep: SignInOutput['nextStep'] | null;
-  continueSignIn: (result: SignInOutput) => Promise<void>;
-  clearChallenge: () => void;
+  setNextStep: (step: SignInOutput['nextStep'] | null) => void;
 };
 
 const AuthContext = createContext<AuthFlow | null>(null);
@@ -18,15 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState('');
   const [nextStep, setNextStep] = useState<SignInOutput['nextStep'] | null>(null);
 
-  // [COGNITO C03 START]
-  async function continueSignIn(): Promise<void> {
-    // TODO C03: MFA方式の選択、認証結果の保持、C02を使う画面遷移を実装してください。
-    // 結果の引数はAuthFlowの型を参考に追加します。
-    throw new Error('TODO C03: 認証フローの継続処理を実装してください。');
-  }
-  // [COGNITO C03 END]
-
-  return <AuthContext.Provider value={{ email, setEmail, nextStep, continueSignIn, clearChallenge: () => setNextStep(null) }}>
+  return <AuthContext.Provider value={{ email, setEmail, nextStep, setNextStep }}>
     {children}
   </AuthContext.Provider>;
 }
