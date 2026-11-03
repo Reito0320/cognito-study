@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { HomeSession } from './home-session';
 import { FlowDeck } from './flow-deck';
+import { LambdaExercise } from './lambda-exercise';
 
 export const metadata: Metadata = { title: '認証フローの学習カード | Cognito Study' };
 
@@ -23,5 +24,6 @@ export default function HomePage() {
         </div>
       </main>
     </div>
+    <LambdaExercise />
   </HomeSession>;
 }

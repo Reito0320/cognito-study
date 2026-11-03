@@ -45,6 +45,12 @@ npm run lint
 npx next build --webpack
 ```
 
-実際の認証は[確認順序](docs/exercises.md#前提と確認順序)に沿って確認します。共通関数用のtest:authは廃止しました。
+実際の認証は[確認順序](docs/exercises.md#第1部の確認)に沿って確認します。
 
-自動サインイン、MFA方式の選択、Lambda経由の実装は発展課題です。`[LAMBDA Lxx START]`〜`END`のコメントはそのまま使えます。
+## 認証ができたらLambdaへ
+
+[問題集の第2部](docs/exercises.md#第2部lambdaでログイン後のapiを作る)へ進みます。まずLambdaからメッセージを返し、次にAPI Gatewayでログインした人だけが呼べるようにし、最後にホームのボタンから呼びます。
+
+画面側は`app/home/lambda-exercise.tsx`、Lambda側は`lambda/study-message/index.mjs`に、書く順番を示すコメントがあります。AWSへの配置やAPI Gatewayの設定は問題集に沿って自分で行います。
+
+自動サインインや認証方式の選択、登録・ログイン自体のLambdaへの移行は、その後の発展課題です。
