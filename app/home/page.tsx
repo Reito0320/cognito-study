@@ -14,7 +14,7 @@ export default function HomePage() {
       </header>
       <main className="mx-auto max-w-[1440px] px-5 py-9 sm:px-8 sm:py-12 lg:px-10">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-5">
-          <div><p className="text-xs font-semibold tracking-[0.2em] text-cognito-700">LEARN ONE CARD AT A TIME</p><h1 className="mb-3 mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">めくって学ぶ、Cognito認証。</h1><p className="text-sm leading-7 text-slate-500 sm:text-base">登録からサインアウトまで。処理の流れと、実際の実装をひとつずつ。</p></div>
+          <div><p className="text-xs font-semibold tracking-[0.2em] text-cognito-700">LEARN ONE CARD AT A TIME</p><h1 className="mb-3 mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">めくって学ぶ、Cognito認証。</h1><p className="text-sm leading-7 text-slate-500 sm:text-base">初回登録から再ログイン、ユーザー情報の表示まで。処理の流れと、実際の実装をひとつずつ。</p></div>
           <span className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-500">Amplify Auth / 9 cards</span>
         </div>
         <FlowDeck />

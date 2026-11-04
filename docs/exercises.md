@@ -93,6 +93,8 @@ Cognito側はメールアドレスでのログイン、メールコードによ�
 
 この課題は「QRを表示する」「コードを送る」の2つに分けます。
 
+スマートフォンに認証アプリを用意してください。インストール先は`/mfa/setup`の「認証アプリを用意する」にあります。Google AuthenticatorかMicrosoft Authenticatorのどちらか1つで進められます。
+
 **先にQRを表示します（C09-DATA）。**
 
 1. `useAuthFlow`から`nextStep`を受け取ります。これは前のページで保存した値です。
@@ -111,7 +113,22 @@ Cognito側はメールアドレスでのログイン、メールコードによ�
 
 共有値はページを再読み込みすると消えます。値がない場合はログインからやり直す案内を表示してください。共有秘密鍵はURLやログに書かず、永続保存もしません。
 
-### 7. 登録済みの認証アプリで確認する（C08）
+### 7. 初回ログインのセッションを終了する（C11）
+
+**場所：`app/home/home-session.tsx`の`handleSignOut`**
+
+初回のMFA設定でホームへ進めたら、次はサインアウトを実装します。いったんセッションを終了してから、2回目以降のログインに必要なMFAを作ります。
+
+1. `signOut`を`aws-amplify/auth`からimportします。
+2. `await signOut({ global: true })`を呼び、全端末のリフレッシュトークンを失効させ、このブラウザに保存された認証情報も削除します。
+3. `useAuthFlow`から受け取った`setNextStep`で`setNextStep(null)`を呼びます。
+4. `useRouter`で`/login`へ進みます。
+
+**確認：** 初回MFA設定後のホームでサインアウトを押すと、ログイン画面へ戻ること。ブラウザを再読み込みしてもセッションが復元されないことを`fetchAuthSession()`の`tokens`がないことで確認します。確認用コードでトークンの値は画面やログに出さないでください。この時点では2回目以降のMFAは未実装なので、再ログインの完了は次の課題で確認します。
+
+`global: true`は他の端末もサインアウトさせます。Cognitoでの失効後も、署名と有効期限だけでJWTを検証するAPIは、発行済みJWTを期限まで受け付ける場合があります。「サインアウト直後にすべてのAPIでJWTが使えなくなる」という意味ではありません。[AWSのトークン失効の説明](https://docs.aws.amazon.com/cognito/latest/developerguide/token-revocation.html)も参照してください。
+
+### 8. 2回目以降のMFAを実装する（C08）
 
 **場所：`app/mfa/page.tsx`の`handleMfa`**
 
@@ -119,30 +136,20 @@ Cognito側はメールアドレスでのログイン、メールコードによ�
 2. `challengeResponse`に入力された`code`を渡します。
 3. 結果の`isSignedIn`が`true`なら、`setNextStep(null)`を呼び、`/home`へ進みます。`setNextStep`は`useAuthFlow`から受け取ります。
 
-**確認：** 後のサインアウト課題を終えたら、もう一度ログインして試します。初回設定のQRではなくコード入力画面が表示され、正しいコードでホームへ進むこと。
+**確認：** サインアウト済みのアカウントでメールアドレスとパスワードを入力すると、`CONFIRM_SIGN_IN_WITH_TOTP_CODE`が返り、`/mfa`へ進むこと。初回設定のQRは表示されず、登録済みアプリの正しいコードでホームへ進み、間違ったコードではエラーになること。
 
-### 8. ログイン状態を確認する（C10）
+### 9. セッションからメールアドレスを表示する（C10）
 
 **場所：`app/home/home-session.tsx`**
 
-1. 表示用のメールを保存するstateを用意します。
-2. `useEffect`の中で`fetchAuthSession()`を呼びます。
-3. `tokens?.idToken`があれば、その`payload.email`を表示します。
+1. 表示用の`userInfo`と`setUserInfo`は用意済みです。初期値は未実装時の案内文なので、stateや表示用の`<p>`を追加する必要はありません。
+2. `useEffect`と`fetchAuthSession`をimportし、`useEffect`の中で`fetchAuthSession()`を呼びます。`useRouter`も用意します。
+3. `tokens?.idToken`があれば、`setUserInfo(String(tokens.idToken.payload.email ?? 'ユーザー'))`で案内文をメールアドレスに置き換えます。
 4. トークンがなければ`/login`へ移動します。通信などのエラーはcatchで画面に表示します。
 
-**確認：** ホームに自分のメールアドレスが表示されること。未ログインで直接ホームを開くとログイン画面へ戻ること。
+**確認：** 再ログインしてMFAを完了すると、ホーム上部の案内文が自分のメールアドレスに置き換わること。サインアウト後、未ログインで直接ホームを開くとログイン画面へ戻ること。
 
 トークンは、ログインしたことを示す文字列です。ホームでの確認は画面表示のための処理で、APIを守る仕組みは第2部で作ります。
-
-### 9. サインアウトする（C11）
-
-**場所：`app/home/home-session.tsx`の`handleSignOut`**
-
-1. `signOut()`を呼びます。
-2. `useAuthFlow`から受け取った`setNextStep`で`setNextStep(null)`を呼びます。
-3. `/login`へ進みます。
-
-**確認：** サインアウト後にログインし直すと、課題7のコード入力画面へ進むこと。
 
 ## 第1部の確認
 
@@ -152,13 +159,6 @@ Cognito側はメールアドレスでのログイン、メールコードによ�
 - サインアウト → ログイン → 認証アプリのコード確認 → ホーム
 
 コードの間違いでエラーが出ること、メールコードを再送できることも試してください。
-
-```bash
-npm run lint
-npx next build --webpack
-```
-
-空欄のままでもUIとビルドを確認できます。実際の認証はCognitoに接続して確認します。ホームの学習カードに参考コードがあります。
 
 ## 第2部：Lambdaでログイン後のAPIを作る
 

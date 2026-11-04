@@ -15,7 +15,20 @@ export function SetupForm({ qrCode, setupKey, code, onCodeChange, onSubmit, erro
   return <form method="post" onSubmit={onSubmit} className="my-7 space-y-7">
     <section aria-labelledby="install-app">
       <div className="mb-2 flex items-center gap-2.5"><span className="grid size-6 shrink-0 place-items-center rounded-full bg-cognito-50 text-sm font-semibold text-cognito-800">1</span><h3 id="install-app" className="text-base font-semibold">認証アプリを用意する</h3></div>
-      <p className="text-sm leading-6 text-slate-500">Google AuthenticatorやMicrosoft Authenticatorなど、TOTPに対応したアプリを開いてください。</p>
+      <p className="text-sm leading-6 text-slate-500">別端末のスマートフォンに、次のどちらか1つをインストールしてください。すでにお持ちなら、そのアプリで進められます。</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {[
+          { name: 'Google Authenticator', ios: 'https://apps.apple.com/app/google-authenticator/id388497605', android: 'https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2' },
+          { name: 'Microsoft Authenticator', ios: 'https://apps.apple.com/app/microsoft-authenticator/id983156458', android: 'https://play.google.com/store/apps/details?id=com.azure.authenticator' },
+        ].map((app) => <div key={app.name} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <p className="text-sm font-medium text-slate-700">{app.name}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <a href={app.ios} target="_blank" rel="noopener noreferrer" aria-label={`${app.name}をApp Storeで開く（新しいタブ）`} className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-cognito-800 underline underline-offset-4 hover:bg-cognito-50">iPhone / iPad ↗</a>
+            <a href={app.android} target="_blank" rel="noopener noreferrer" aria-label={`${app.name}をGoogle Playで開く（新しいタブ）`} className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-cognito-800 underline underline-offset-4 hover:bg-cognito-50">Android ↗</a>
+          </div>
+        </div>)}
+      </div>
+      <p className="mt-3 text-sm leading-6 text-slate-500">インストール後にアプリでアカウントを追加し、この画面のQRコードを読み取ります。</p>
     </section>
     <section aria-labelledby="register-device">
       <div className="mb-3 flex items-center gap-2.5"><span className="grid size-6 shrink-0 place-items-center rounded-full bg-cognito-50 text-sm font-semibold text-cognito-800">2</span><h3 id="register-device" className="text-base font-semibold">QRコードを読み取る</h3></div>

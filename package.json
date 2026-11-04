@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "aws-amplify": "^6.22.2",
+    "motion": "^14.9.1",
     "next": "16.4.3",
     "qrcode.react": "^4.2.0",
     "react": "19.3.0",

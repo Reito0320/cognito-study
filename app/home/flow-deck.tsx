@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion, MotionConfig } from 'motion/react';
 import { flowLessons } from './flow-lessons';
 
 export function FlowDeck() {
@@ -17,7 +18,7 @@ export function FlowDeck() {
     setResultIndex(0);
   }
 
-  return <section aria-label="認証フローの学習カード" className="grid items-start gap-8 lg:grid-cols-[250px_minmax(0,1fr)]">
+  return <MotionConfig reducedMotion="user"><section aria-label="認証フローの学習カード" className="grid items-start gap-8 lg:grid-cols-[250px_minmax(0,1fr)]">
     <nav aria-label="学習ステップ" className="min-w-0 lg:sticky lg:top-6">
       <p className="mb-4 text-xs font-semibold tracking-[0.18em] text-slate-400">YOUR LEARNING PATH</p>
       <ol className="flex gap-2 overflow-x-auto pb-3 lg:flex-col lg:overflow-visible lg:pb-0">
@@ -41,7 +42,12 @@ export function FlowDeck() {
       <div className="relative mb-4 pb-3">
         <div aria-hidden="true" className="absolute inset-x-4 bottom-0 top-8 rounded-3xl border border-slate-200 bg-slate-100" />
         <div aria-hidden="true" className="absolute inset-x-2 bottom-1.5 top-4 rounded-3xl border border-slate-200 bg-white" />
-        <article key={lesson.id} aria-labelledby="card-title" className="relative min-h-[590px] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_12px_45px_-24px_rgba(15,23,42,0.20)]">
+        <motion.article key={lesson.id} aria-labelledby="card-title"
+          initial={{ opacity: 0.85, y: 24, scale: 0.98 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="relative min-h-[590px] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_12px_45px_-24px_rgba(15,23,42,0.20)]">
           <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-6 py-5 sm:px-9">
             <span className="text-xs font-semibold tracking-[0.18em] text-cognito-700">AUTH FLOW / {String(index + 1).padStart(2, '0')}</span>
             <span className="rounded-full border border-cognito-100 bg-cognito-50 px-3 py-1 text-xs text-cognito-800">{lesson.id}</span>
@@ -72,10 +78,15 @@ export function FlowDeck() {
               </div>}
             </div>
           </div>
-        </article>
+        </motion.article>
       </div>
 
-      {result && <section aria-labelledby="result-title" className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      {result && <motion.section key={lesson.id} aria-labelledby="result-title"
+        initial={{ opacity: 0.85, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-6 py-5">
           <h3 id="result-title" className="text-base font-semibold text-slate-800">{lesson.resultTitle}</h3>
           <span className="font-mono text-xs tracking-widest text-cognito-700">DATA EXAMPLE</span>
@@ -92,7 +103,7 @@ export function FlowDeck() {
             <p aria-live="polite" className="text-sm leading-7 text-cognito-950">{result.meaning}</p>
           </div>
         </div>
-      </section>}
+      </motion.section>}
 
       <div className="mt-6 flex items-center justify-between gap-3">
         <button type="button" disabled={index === 0} onClick={() => turnCard(index - 1)} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 transition-colors hover:border-slate-400 disabled:cursor-default disabled:opacity-35 sm:px-6">← 前のカード</button>
@@ -101,5 +112,5 @@ export function FlowDeck() {
       </div>
       <p className="mt-4 text-right text-sm leading-6 text-slate-400">{isLast ? 'ここまでで、ひと通りの認証フローを確認しました。' : `次のカード：${flowLessons[index + 1].title}`}</p>
     </div>
-  </section>;
+  </section></MotionConfig>;
 }

@@ -140,7 +140,7 @@ export const flowLessons = [
       "getSetupUriのURIを、ブラウザ内でQRコードに変換。",
       "sharedSecretは手動登録に使用。アプリの永続ストレージには保存しない。"
     ],
-    "outcome": "アプリに登録したら、表示される6桁のコードで確認。",
+    "outcome": "初回設定とログインが完了したら、次はサインアウトを実装。",
     "file": "app/mfa/setup/page.tsx",
     "code": "// Pageの中：loginで保存した値からQRを作ります。\nconst { nextStep, setNextStep } = useAuthFlow();\nconst details = nextStep?.signInStep === 'CONTINUE_SIGN_IN_WITH_TOTP_SETUP'\n  ? nextStep.totpSetupDetails : null;\n\n// JSX内（detailsがない場合はログインからやり直す案内を表示）\n// qrCode={<QRCodeSVG value={details.getSetupUri('Cognito Study').toString()} />}\n// setupKey={details.sharedSecret}\n\n// handleSetup内：認証アプリのコードで設定を確定します。\nconst { isSignedIn } = await confirmSignIn({ challengeResponse: code });\nif (isSignedIn) {\n  setNextStep(null);\n  router.replace('/home');\n}",
     "resultTitle": "受け取る設定データの例",
@@ -158,17 +158,34 @@ export const flowLessons = [
     ]
   },
   {
+    "id": "C11",
+    "title": "初回ログインのセッションを終了する",
+    "api": "signOut",
+    "chapter": "サインアウト",
+    "description": "初回MFA設定後にサインアウトを実装し、2回目以降のログインを試せる状態に戻します。",
+    "points": [
+      "signOut({ global: true })で全端末のリフレッシュトークンを失効させる。",
+      "ブラウザの認証情報とContextのチャレンジもクリア。",
+      "APIのJWT検証では、発行済みトークンが有効期限まで使える場合がある。"
+    ],
+    "outcome": "ログイン画面に戻ったら、次は2回目以降のMFAを実装。",
+    "file": "app/home/home-session.tsx",
+    "code": "await signOut({ global: true });\nsetNextStep(null);\nrouter.replace('/login');",
+    "resultTitle": "",
+    "results": []
+  },
+  {
     "id": "C08",
-    "title": "MFAのコードを確認する",
+    "title": "2回目以降のMFAを確認する",
     "api": "confirmSignIn",
     "chapter": "追加認証",
-    "description": "認証アプリのコードをCognitoに渡し、ログインの追加手順を完了させます。",
+    "description": "サインアウト後に再ログインし、登録済みの認証アプリのコードで追加認証を完了させます。",
     "points": [
       "confirmSignInへコードを渡す。",
       "isSignedInがtrueなら完了。",
       "共有値を消して/homeへ進む。"
     ],
-    "outcome": "isSignedInがtrueなら、ホームが表示される。",
+    "outcome": "再ログインでホームへ進めたら、最後はセッションからメールアドレスを表示。",
     "file": "app/mfa/page.tsx",
     "code": "const { isSignedIn } = await confirmSignIn({ challengeResponse: code });\nif (isSignedIn) {\n  setNextStep(null);\n  router.replace('/home');\n}",
     "resultTitle": "返り値の例",
@@ -182,7 +199,7 @@ export const flowLessons = [
   },
   {
     "id": "C10",
-    "title": "ログイン状態とユーザーを確認する",
+    "title": "セッションからメールアドレスを表示する",
     "api": "fetchAuthSession",
     "chapter": "ホーム",
     "description": "保存済みセッションを取得し、ホームに表示するユーザー情報を取り出します。",
@@ -191,9 +208,9 @@ export const flowLessons = [
       "IDトークンのemailを画面に表示。",
       "ブラウザの確認とは別に、APIではサーバー側でトークンを検証する。"
     ],
-    "outcome": "ホームにユーザーを表示。次はサインアウト。",
+    "outcome": "ホームに自分のメールアドレスが表示されたら、Cognitoの基本課題は完了。",
     "file": "app/home/home-session.tsx",
-    "code": "// Pageの先頭にnameのstateとuseRouterを用意します。\nuseEffect(() => {\n  async function loadSession() {\n    try {\n      const { tokens } = await fetchAuthSession();\n      if (!tokens?.idToken) {\n        router.replace('/login');\n        return;\n      }\n      setName(String(tokens.idToken.payload.email ?? 'ユーザー'));\n    } catch (error) {\n      setError(error instanceof Error ? error.message : 'セッションを確認できませんでした。');\n    }\n  }\n  loadSession();\n}, [router]);",
+    "code": "// userInfoとsetUserInfoは用意済みです。\n// useEffect・fetchAuthSessionをimportし、useRouterを用意します。\nuseEffect(() => {\n  async function loadSession() {\n    try {\n      const { tokens } = await fetchAuthSession();\n      if (!tokens?.idToken) {\n        router.replace('/login');\n        return;\n      }\n      setUserInfo(String(tokens.idToken.payload.email ?? 'ユーザー'));\n    } catch (error) {\n      setError(error instanceof Error ? error.message : 'セッションを確認できませんでした。');\n    }\n  }\n  loadSession();\n}, [router]);",
     "resultTitle": "返り値の例",
     "results": [
       {
@@ -207,22 +224,5 @@ export const flowLessons = [
         "meaning": "未ログインの場合はtokensがないため/loginへ。期限切れ時の更新失敗などは例外になる場合もあります。"
       }
     ]
-  },
-  {
-    "id": "C11",
-    "title": "セッションを終了する",
-    "api": "signOut",
-    "chapter": "サインアウト",
-    "description": "ログイン状態を終了し、別アカウントや次のログインを試せる状態に戻します。",
-    "points": [
-      "トークンの削除はAmplify Authに任せる。",
-      "Contextの進行中のチャレンジもクリア。",
-      "ログイン画面へ戻して、一連の流れをもう一度確認。"
-    ],
-    "outcome": "サインアウト後は、signInから再開。",
-    "file": "app/home/home-session.tsx",
-    "code": "await signOut();\nsetNextStep(null);\nrouter.replace('/login');",
-    "resultTitle": "",
-    "results": []
   }
 ] as const;
