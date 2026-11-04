@@ -27,7 +27,7 @@ export function SignupForm({
   message,
 }: Props) {
   return (
-    <form className="auth-fields" onSubmit={onSubmit}>
+    <form method="post" className="auth-fields" onSubmit={onSubmit}>
       <div className="field">
         <label htmlFor="email">メールアドレス</label>
         <input

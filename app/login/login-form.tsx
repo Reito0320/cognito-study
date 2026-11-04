@@ -22,7 +22,7 @@ export function LoginForm({
   message,
 }: Props) {
   return (
-    <form className="auth-fields" onSubmit={onSubmit} aria-busy={isSubmitting}>
+    <form method="post" className="auth-fields" onSubmit={onSubmit} aria-busy={isSubmitting}>
       <div className="field">
         <label htmlFor="email">メールアドレス</label>
         <input

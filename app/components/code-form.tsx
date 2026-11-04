@@ -17,7 +17,7 @@ type Props = {
 };
 
 export function CodeForm({ emailInputRef, email, onEmailChange, code, onCodeChange, onSubmit, label, hint, action, isSubmitting, disabled, error, message }: Props) {
-  return <form className="auth-fields" onSubmit={onSubmit} aria-busy={isSubmitting}>
+  return <form method="post" className="auth-fields" onSubmit={onSubmit} aria-busy={isSubmitting}>
     {onEmailChange && <div className="field">
       <label htmlFor="email">登録したメールアドレス</label>
       <input ref={emailInputRef} id="email" name="email" type="email" autoComplete="email" placeholder="you@example.com"

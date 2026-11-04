@@ -12,7 +12,7 @@ type Props = {
 
 // Cognitoから受け取るQRコード・キーは、ページ側から渡します。
 export function SetupForm({ qrCode, setupKey, code, onCodeChange, onSubmit, error, isSubmitting }: Props) {
-  return <form onSubmit={onSubmit} className="my-7 space-y-7">
+  return <form method="post" onSubmit={onSubmit} className="my-7 space-y-7">
     <section aria-labelledby="install-app">
       <div className="mb-2 flex items-center gap-2.5"><span className="grid size-6 shrink-0 place-items-center rounded-full bg-cognito-50 text-sm font-semibold text-cognito-800">1</span><h3 id="install-app" className="text-base font-semibold">認証アプリを用意する</h3></div>
       <p className="text-sm leading-6 text-slate-500">Google AuthenticatorやMicrosoft Authenticatorなど、TOTPに対応したアプリを開いてください。</p>
