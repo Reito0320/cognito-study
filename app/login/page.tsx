@@ -29,9 +29,6 @@ export default function Page() {
       // useRouter()はPageの先頭で呼びます。共通の認証関数は作りません。
       throw new Error('TODO C05: メールアドレスとパスワードを使ったログインは未実装です。');
       // [COGNITO C05 END]
-      // [LAMBDA L02 START]
-      // TODO: Lambda経由で実装する場合の処理をここに記述（Cognito直接呼び出しとの二重実行はしない）。
-      // [LAMBDA L02 END]
     } catch (error) {
       setError(error instanceof Error ? error.message : '認証処理に失敗しました。');
     } finally {

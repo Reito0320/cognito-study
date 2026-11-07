@@ -29,9 +29,6 @@ export default function MfaSetupPage() {
       // confirmSignInとuseRouterをimportし、Pageの先頭でrouterを用意します。
       throw new Error('TODO C09: TOTP初回設定の確認は未実装です。');
       // [COGNITO C09 END]
-      // [LAMBDA L06 START]
-      // TODO: Lambda経由の処理を実装する場合の空欄です。
-      // [LAMBDA L06 END]
     } catch (error) {
       setError(error instanceof Error ? error.message : '認証処理に失敗しました。');
     } finally {

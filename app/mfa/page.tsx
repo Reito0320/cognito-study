@@ -22,9 +22,6 @@ export default function Page() {
       // confirmSignInとuseRouterをimportし、Pageの先頭でrouterを用意します。
       throw new Error('TODO C08: MFAコードの確認と認証結果に応じた画面遷移は未実装です。');
       // [COGNITO C08 END]
-      // [LAMBDA L05 START]
-      // TODO: Lambda経由で実装する場合の処理をここに記述（Cognito直接呼び出しとの二重実行はしない）。
-      // [LAMBDA L05 END]
     } catch (error) {
       setError(error instanceof Error ? error.message : '認証処理に失敗しました。');
     } finally {

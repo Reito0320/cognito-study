@@ -27,9 +27,6 @@ export default function Page() {
       // confirmSignUpとuseRouterをimportし、Pageの先頭でrouterを用意します。
       throw new Error('TODO C06: 登録コード確認は未実装です。');
       // [COGNITO C06 END]
-      // [LAMBDA L03 START]
-      // TODO: Lambda経由の登録確認処理を実装する場合の空欄です。
-      // [LAMBDA L03 END]
     } catch (error) {
       setError(error instanceof Error ? error.message : '認証処理に失敗しました。');
     } finally {
@@ -48,9 +45,6 @@ export default function Page() {
       // 成功したらsetCode('')とsetMessage('認証コードを再送信しました。')を実行します。
       throw new Error('TODO C07: 登録確認コードの再送信は未実装です。');
       // [COGNITO C07 END]
-      // [LAMBDA L04 START]
-      // TODO: Lambda経由で実装する場合の処理をここに記述（Cognito直接呼び出しとの二重実行はしない）。
-      // [LAMBDA L04 END]
     } catch (error) {
       setError(error instanceof Error ? error.message : '認証処理に失敗しました。');
     } finally {

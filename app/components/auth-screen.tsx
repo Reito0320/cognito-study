@@ -103,7 +103,7 @@ export function AuthScreen({ screen, children, footer, title, description }: { s
         </section>
         <p className="preview-note">
           <span aria-hidden="true" />
-          学習用UI · CognitoとLambdaの実装は課題です
+          学習用UI · Cognito認証の実装は課題です
         </p>
       </main>
       <footer className="site-footer">

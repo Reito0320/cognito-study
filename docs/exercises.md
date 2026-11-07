@@ -1,6 +1,6 @@
-# 認証とLambdaの問題集
+# Cognito認証の問題集
 
-まずAmplify Authで「登録して、ログインできる」ところまで作ります。それができたら、Lambdaで「ログインした人だけが呼べるAPI」を作ります。
+Cognitoで新規登録、メール確認、ログイン、認証アプリによるMFA、セッションの確認、サインアウトを実装します。下の9つの課題をすべて実装し、最後の完了チェックを満たせば、この問題集は完了です。
 
 ## はじめに
 
@@ -11,13 +11,13 @@
 3. 仮置きの`throw new Error('TODO ...')`を自分の処理に置き換えます。
 4. ブラウザで動かして、できたら次へ進みます。
 
-SDKは「AWSに処理をお願いするための関数」です。たとえば`signUp`は登録、`signIn`はログインをお願いします。`aws-amplify/auth`から必要な関数をimportします。
+この問題集では、Cognitoの認証を呼び出すライブラリとしてAmplify Authを使います。SDKは「Cognitoに処理をお願いするための関数」です。たとえば`signUp`は登録、`signIn`はログインをお願いします。`aws-amplify/auth`から必要な関数をimportします。
 
 画面を移動するときは`useRouter`を`next/navigation`からimportし、Pageの先頭で`const router = useRouter()`を用意します。移動は`router.replace('/login')`のように書きます。
 
 認証の共通関数は作らず、そのページのハンドラーに直接書いてください。エラーは用意済みのcatchで表示できます。
 
-## 第1部：Amplify Authで認証する
+## Cognito認証を実装する
 
 ### 1. Cognitoにつなぐ（C01）
 
@@ -93,7 +93,7 @@ Cognito側はメールアドレスでのログイン、メールコードによ�
 
 この課題は「QRを表示する」「コードを送る」の2つに分けます。
 
-スマートフォンに認証アプリを用意してください。インストール先は`/mfa/setup`の「認証アプリを用意する」にあります。Google AuthenticatorかMicrosoft Authenticatorのどちらか1つで進められます。
+スマートフォンにTOTP対応の認証アプリを用意してください。`/mfa/setup`の「認証アプリを用意する」を確認して進めます。
 
 **先にQRを表示します（C09-DATA）。**
 
@@ -126,7 +126,7 @@ Cognito側はメールアドレスでのログイン、メールコードによ�
 
 **確認：** 初回MFA設定後のホームでサインアウトを押すと、ログイン画面へ戻ること。ブラウザを再読み込みしてもセッションが復元されないことを`fetchAuthSession()`の`tokens`がないことで確認します。確認用コードでトークンの値は画面やログに出さないでください。この時点では2回目以降のMFAは未実装なので、再ログインの完了は次の課題で確認します。
 
-`global: true`は他の端末もサインアウトさせます。Cognitoでの失効後も、署名と有効期限だけでJWTを検証するAPIは、発行済みJWTを期限まで受け付ける場合があります。「サインアウト直後にすべてのAPIでJWTが使えなくなる」という意味ではありません。[AWSのトークン失効の説明](https://docs.aws.amazon.com/cognito/latest/developerguide/token-revocation.html)も参照してください。
+`global: true`は他の端末もサインアウトさせます。Cognitoでの失効後も、署名と有効期限だけでJWTを検証するAPIは、発行済みJWTを期限まで受け付ける場合があります。「サインアウト直後にすべてのAPIでJWTが使えなくなる」という意味ではありません。[Cognitoのトークン失効の説明](https://docs.aws.amazon.com/cognito/latest/developerguide/token-revocation.html)も参照してください。
 
 ### 8. 2回目以降のMFAを実装する（C08）
 
@@ -149,86 +149,34 @@ Cognito側はメールアドレスでのログイン、メールコードによ�
 
 **確認：** 再ログインしてMFAを完了すると、ホーム上部の案内文が自分のメールアドレスに置き換わること。サインアウト後、未ログインで直接ホームを開くとログイン画面へ戻ること。
 
-トークンは、ログインしたことを示す文字列です。ホームでの確認は画面表示のための処理で、APIを守る仕組みは第2部で作ります。
+トークンは、ログインしたことを示す文字列です。この課題では、Cognitoのセッションに含まれるIDトークンからメールアドレスを取り出し、ログイン状態に応じて表示と画面遷移を切り替えます。トークンの値を画面やログに出さないでください。
 
-## 第1部の確認
+## 完了チェック
 
-次の2つが通れば、第2部へ進めます。
+課題1〜9（C01・C04〜C11）をすべて実装し、次の項目をすべて確認できれば、この問題集は完了です。
 
-- 新規登録 → メール確認 → ログイン → 認証アプリの初回設定 → ホーム
-- サインアウト → ログイン → 認証アプリのコード確認 → ホーム
+- [ ] 新規登録すると確認メールが届き、メール確認画面へ進む。
+- [ ] 正しいメールコードで確認が完了し、ログイン画面へ進む。
+- [ ] メール確認前にコードを再送でき、入力欄が空になり、再送メッセージが表示される。
+- [ ] 初回ログインで認証アプリの設定画面へ進み、QRコードと手入力用キーを表示できる。
+- [ ] 認証アプリの正しいコードで初回設定を完了し、ホームへ進む。
+- [ ] サインアウトするとログイン画面へ戻り、再読み込みしてもセッションが復元されない。
+- [ ] 2回目以降のログインでは初回設定のQRコードを表示せず、認証アプリのコード確認画面へ進む。
+- [ ] 登録済みの認証アプリの正しいコードでホームへ進み、自分のメールアドレスが表示される。
+- [ ] 間違ったメールコードや認証アプリのコードではエラーが表示され、認証完了として画面遷移しない。
+- [ ] 未ログインで直接`/home`を開くと、ログイン画面へ戻る。
+- [ ] 初回設定画面を再読み込みして共有値が消えた場合、ログインからやり直す案内が表示される。
+- [ ] トークンの値を画面やログに出さず、共有秘密鍵をURLやログに書いたり永続保存したりしていない。
 
-コードの間違いでエラーが出ること、メールコードを再送できることも試してください。
+確認する流れは次の2つです。
 
-## 第2部：Lambdaでログイン後のAPIを作る
+1. 新規登録 → メール確認 → ログイン → 認証アプリの初回設定 → ホームでメールアドレスを表示
+2. サインアウト → ログイン → 登録済みの認証アプリのコード確認 → ホームでメールアドレスを表示
 
-目標は、ホームのボタンを押すとLambdaからメッセージと自分のユーザーIDが返ることです。登録・ログイン・MFAは第1部のAmplify Authをそのまま使います。
-
-流れは「画面 → API Gateway → Lambda → 画面」です。API Gatewayはリクエストの入口、LambdaはAWS上で実行される処理です。初めはAWSコンソールで1つずつ設定します。自動デプロイやデータベースはまだ不要です。
-
-### 10. Lambdaからメッセージを返す（L07）
-
-**場所：`lambda/study-message/index.mjs`**
-
-1. コメントの下に、`statusCode: 200`の応答を書きます。
-2. `body`には`JSON.stringify({ message: 'Lambdaからこんにちは' })`を入れます。
-3. AWSコンソールでNode.jsのLambdaを作り、ファイルを貼り付けます。ハンドラー名は`index.handler`です。
-4. コンソールのテストで実行します。この段階ではAPIを公開する必要はありません。
-
-**確認：** テストの結果にステータス200とメッセージが表示されること。
-
-### 11. ログインした人だけが呼べる入口を作る（L08）
-
-**場所：AWSコンソールのAPI Gateway（HTTP API）**
-
-1. HTTP APIを作り、`GET /study-message`を先ほどのLambdaへ接続します。Lambda統合のペイロード形式は`2.0`にします。
-2. JWTオーソライザーを作ります。これはCognitoのトークンを確かめる係です。
-3. トークンの取得元は`$request.header.Authorization`、Issuerは`https://cognito-idp.<リージョン>.amazonaws.com/<User Pool ID>`、AudienceはApp Client IDにします。
-4. そのオーソライザーを`GET /study-message`に設定します。ルートの認可スコープには`aws.cognito.signin.user.admin`を指定します。これは今回のパスワードログインで取得するアクセストークンのスコープを使う学習用の設定です。
-5. CORSで開発画面のオリジン（通常`http://localhost:3000`）、メソッド`GET`、ヘッダー`Authorization`を許可します。
-6. APIをデプロイします（自動デプロイなら設定の反映を確認）。API GatewayにLambdaを実行する権限があることも確認します。
-
-**確認：** トークンなしでこのURLを開いても、メッセージは返らず401になること。ログイン後の成功確認は次の課題で行います。
-
-今回のスコープは学習用です。実際のアプリで操作別の権限が必要になったら、そのAPI用のスコープを設計します。
-
-### 12. ホームからAPIを呼ぶ（L09）
-
-**場所：`app/home/lambda-exercise.tsx`の`handleRequest`**
-
-ホームに練習用ボタンは用意済みです。`[LAMBDA L09 START]`〜`END`に書きます。
-
-1. `.env.local`に`NEXT_PUBLIC_STUDY_API_URL`を追加し、課題11のルートまでのURLを書きます。例：`https://<API ID>.execute-api.<リージョン>.amazonaws.com/study-message`。ステージ名がある場合はパスに含めます。開発サーバーを再起動します。
-2. `fetchAuthSession`を`aws-amplify/auth`からimportして呼びます。
-3. `tokens?.accessToken`がなければ、ログインし直すようエラーを表示します。
-4. `accessToken.toString()`を取り出し、`fetch`の`Authorization`ヘッダーに`Bearer <トークン>`として付けて送ります。
-5. `response.ok`がfalseならエラーを表示します。成功なら`response.json()`を読み、`setMessage(data.message)`で表示します。
-
-**確認：** ログインしてからボタンを押すと、Lambdaのメッセージが表示されること。トークンは画面やログに表示しません。
-
-### 13. Lambdaで呼び出した人を知る（L10）
-
-**場所：`lambda/study-message/index.mjs`**
-
-1. L07の応答を、L10のコメントに沿って書き換えます。
-2. `event.requestContext.authorizer.jwt.claims.sub`を取り出します。`sub`はCognitoのユーザーごとのIDです。
-3. 返すJSONに`userId`として追加します。画面から送られたユーザーIDを使う必要はありません。
-4. ホーム側のL09で、`data.userId`も`setMessage`に渡す文字列へ追加します。
-
-**確認：** 自分のIDが表示され、別のユーザーでログインするとIDが変わること。IDトークンやトークンなしのリクエストではAPIを呼べないことも確認します。
-
-コンソールでL10をテストするときは、上の構造のテストイベントを作って`sub`に仮の値を入れます。これは処理単体の練習です。実際のトークン検証は課題11のAPI Gateway経由で確認してください。
-
-## さらに練習したい場合
-
-- C12：ログイン画面にも現在のユーザーを表示する
-- 自動サインイン：メール確認の後、そのままログインを続ける
-- SMSやメールによるMFA、エラー名ごとの案内
-- L01〜L06：既存の各ページにあるコメントを使い、登録・ログイン・コード確認自体をLambda経由へ置き換える。サーバー側の認証セッションやトークン管理も必要になるため、第2部の後の別課題とします。直接のAmplify呼び出しと二重実行しないようにします
+両方の流れと上記のチェックを確認できたら、Cognito認証のハンズオンは終了です。追加の課題はありません。
 
 ## 参考資料
 
-- [Amplifyの登録処理](https://docs.amplify.aws/nextjs/frontend/auth/sign-up/)
-- [AmplifyのログインとMFA](https://docs.amplify.aws/nextjs/frontend/auth/multi-step-sign-in/)
-- [API GatewayのJWTオーソライザー](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html)
-- [HTTP APIとLambdaの接続](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html)
+- [Cognitoへの登録を行うSDKの使い方](https://docs.amplify.aws/nextjs/frontend/auth/sign-up/)
+- [CognitoへのログインとMFAを行うSDKの使い方](https://docs.amplify.aws/nextjs/frontend/auth/multi-step-sign-in/)
+- [Cognitoのトークン失効](https://docs.aws.amazon.com/cognito/latest/developerguide/token-revocation.html)
