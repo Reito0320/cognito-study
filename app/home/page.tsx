@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { HomeSession } from './home-session';
 import { FlowDeck } from './flow-deck';
+import { StudyMemos } from './study-memos';
 
 export const metadata: Metadata = { title: '認証フローの学習カード | Cognito Study' };
 
@@ -17,6 +18,7 @@ export default function HomePage() {
           <span className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-500">Amplify Auth / 9 cards</span>
         </div>
         <FlowDeck />
+        <StudyMemos />
         <div className="mt-12 flex flex-wrap justify-between gap-4 border-t border-slate-200 pt-6 text-sm leading-6 text-slate-400">
           <p>コードは基本課題の参考例。import・フォーム・周辺の状態管理は省略しています。</p>
           <a href="https://docs.amplify.aws/nextjs/frontend/auth/multi-step-sign-in/" target="_blank" rel="noreferrer" className="text-cognito-800 underline underline-offset-4">Amplify公式ドキュメント ↗</a>
