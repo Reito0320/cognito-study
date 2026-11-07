@@ -1,29 +1,53 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { fetchAuthSession, signOut } from 'aws-amplify/auth';
+import { useAuthFlow } from '../components/auth-provider';
 
 export function HomeSession({ children }: { children: ReactNode }) {
-  // C10でsetUserInfoにIDトークンのpayload.emailを渡します。
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- セッション取得はC10で実装します。
-  const [userInfo, setUserInfo] = useState('学習用プレビュー · セッション確認は未実装です');
+  const router = useRouter();
+  const { setNextStep } = useAuthFlow();
+  const [userInfo, setUserInfo] = useState('セッションを確認中…');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // [COGNITO C10 START]
-  // TODO C10: セッションを確認し、payload.emailをsetUserInfoで表示してください。
-  // 未ログインならログイン画面へ移動します。現時点ではUI確認用にそのまま表示します。
+  // C10: セッションを確認し、IDトークンのメールアドレスを表示します。
+  useEffect(() => {
+    let active = true;
+    async function loadSession() {
+      try {
+        const { tokens } = await fetchAuthSession();
+        if (!active) return;
+        if (tokens?.idToken) {
+          setUserInfo(String(tokens.idToken.payload.email ?? 'ユーザー'));
+        } else {
+          router.replace('/login');
+        }
+      } catch (error) {
+        if (active) setError(error instanceof Error ? error.message : 'セッションの確認に失敗しました。');
+      }
+    }
+    void loadSession();
+    return () => { active = false; };
+  }, [router]);
   // [COGNITO C10 END]
 
   async function handleSignOut() {
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setError('');
     try {
       // [COGNITO C11 START]
-      // TODO C11: signOut({ global: true })でサインアウトし、共有状態を消して/loginへ移動してください。
-      throw new Error('TODO C11: サインアウトは未実装です。');
+      // C11: signOut({ global: true })でサインアウトし、共有状態を消して/loginへ移動してください。
+      await signOut({ global: true });
+      setNextStep(null);
+      setUserInfo('サインアウトしました。');
+      router.replace('/login');
       // [COGNITO C11 END]
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'サインアウトを実装してください。');
+      setError(error instanceof Error ? error.message : 'サインアウトに失敗しました。');
     } finally {
       setIsSubmitting(false);
     }

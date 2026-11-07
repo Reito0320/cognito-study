@@ -1,12 +1,15 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
 import { useState, type SubmitEvent } from 'react';
 import { AuthScreen } from '../components/auth-screen';
 import { CodeForm } from '../components/code-form';
 import { useAuthFlow } from '../components/auth-provider';
 
 export default function Page() {
+  const router = useRouter();
   const { email, setEmail } = useAuthFlow();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -22,10 +25,12 @@ export default function Page() {
     setIsSubmitting(true);
     try {
       // [COGNITO C06 START]
-      // TODO C06: ここでconfirmSignUp({ username: email, confirmationCode: code })を呼びます。
+      // C06: ここでconfirmSignUp({ username: email, confirmationCode: code })を呼びます。
       // 成功したら/loginへ進みます。登録確認はログインとは別の処理です。
       // confirmSignUpとuseRouterをimportし、Pageの先頭でrouterを用意します。
-      throw new Error('TODO C06: 登録コード確認は未実装です。');
+      await confirmSignUp({ username: email, confirmationCode: code });
+      setCode('');
+      router.replace('/login');
       // [COGNITO C06 END]
     } catch (error) {
       setError(error instanceof Error ? error.message : '認証処理に失敗しました。');
@@ -41,9 +46,11 @@ export default function Page() {
     setIsResending(true);
     try {
       // [COGNITO C07 START]
-      // TODO C07: resendSignUpCode({ username: email })を呼びます。
+      // C07: resendSignUpCode({ username: email })を呼びます。
       // 成功したらsetCode('')とsetMessage('認証コードを再送信しました。')を実行します。
-      throw new Error('TODO C07: 登録確認コードの再送信は未実装です。');
+      await resendSignUpCode({ username: email });
+      setCode('');
+      setMessage('認証コードを再送信しました。');
       // [COGNITO C07 END]
     } catch (error) {
       setError(error instanceof Error ? error.message : '認証処理に失敗しました。');
